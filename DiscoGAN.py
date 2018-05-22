@@ -50,7 +50,7 @@ def lrelu(x, leak=0.2, name="lrelu"):
 
 def discriminator_shoes(tensor,reuse=False):
     
-    with tf.variable_scope("discriminator_s"):
+    with tf.variable_scope("discriminator_s", reuse=reuse):
 
         conv1 = tf.contrib.layers.conv2d(inputs=tensor, num_outputs=32, kernel_size=4, stride=2, padding="SAME", \
                                         reuse=reuse, activation_fn=lrelu,weights_initializer=initializer,scope="d_conv1") # 32 x 32 x 32
@@ -78,7 +78,7 @@ def discriminator_shoes(tensor,reuse=False):
 
 def discriminator_bags(tensor,reuse=False):
     
-    with tf.variable_scope("discriminator_b"):
+    with tf.variable_scope("discriminator_b", reuse=reuse):
 
         conv1 = tf.contrib.layers.conv2d(inputs=tensor, num_outputs=32, kernel_size=4, stride=2, padding="SAME", \
                                         reuse=reuse, activation_fn=lrelu,weights_initializer=initializer,scope="d_conv1") # 32 x 32 x 32
@@ -106,7 +106,7 @@ def discriminator_bags(tensor,reuse=False):
 
 def generator_sb(image,reuse=False):
 
-    with tf.variable_scope("generator_sb"):
+    with tf.variable_scope("generator_sb", reuse=reuse):
 
         conv1 = tf.contrib.layers.conv2d(inputs=image, num_outputs=32, kernel_size=4, stride=2, padding="SAME", \
                                         reuse=reuse, activation_fn=lrelu,weights_initializer=initializer,scope="d_conv1") # 32 x 32 x 32
@@ -148,7 +148,7 @@ def generator_sb(image,reuse=False):
 
 def generator_bs(image,reuse=False):
 
-    with tf.variable_scope("generator_bs"):
+    with tf.variable_scope("generator_bs", reuse=reuse):
 
         conv1 = tf.contrib.layers.conv2d(inputs=image, num_outputs=32, kernel_size=4, stride=2, padding="SAME", \
                                         reuse=reuse, activation_fn=lrelu,weights_initializer=initializer,scope="d_conv1") # 32 x 32 x 32
@@ -192,14 +192,14 @@ def generator_bs(image,reuse=False):
 gen_b_fake = generator_sb(batch_shoes)
 gen_s_fake = generator_bs(batch_bags)
 
-recon_s = generator_bs(gen_b_fake,reuse=True)
-recon_b = generator_sb(gen_s_fake,reuse=True)
+recon_s = generator_bs(gen_b_fake,reuse=tf.AUTO_REUSE)
+recon_b = generator_sb(gen_s_fake,reuse=tf.AUTO_REUSE)
 
 disc_s_fake = discriminator_shoes(gen_s_fake)
 disc_b_fake = discriminator_bags(gen_b_fake)
 
-disc_s_real = discriminator_shoes(batch_shoes,reuse=True)
-disc_b_real = discriminator_bags(batch_bags,reuse=True)
+disc_s_real = discriminator_shoes(batch_shoes,reuse=tf.AUTO_REUSE)
+disc_b_real = discriminator_bags(batch_bags,reuse=tf.AUTO_REUSE)
 
 # Loss Caculation
 
@@ -233,10 +233,12 @@ g_grads = g_optimizer.compute_gradients(gen_loss,gen_sb_variables + gen_bs_varia
 update_D = d_optimizer.apply_gradients(d_grads)
 update_G = g_optimizer.apply_gradients(g_grads)
 
+local_init =  tf.local_variables_initializer()
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()
 
 with tf.Session() as sess:
+    sess.run(local_init)
     sess.run(init)
 
     try:
