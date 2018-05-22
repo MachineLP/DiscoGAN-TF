@@ -1,3 +1,7 @@
+
+# 在更高版本的TF会有问题，TF>=1.6
+# 已修改
+
 # DiscoGAN in Tensorflow
 
 Tensorflow implementation of [Learning to Discover Cross-Domain Relations with Generative Adversarial Networks](https://arxiv.org/abs/1703.05192)
